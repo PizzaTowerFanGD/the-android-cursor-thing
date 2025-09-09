@@ -12,7 +12,6 @@ jobs:
 
     env:
       ANDROID_HOME: ${{ github.workspace }}\android-sdk
-      PATH: ${{ github.workspace }}\android-sdk\cmdline-tools\latest\bin;${{ env.PATH }}
 
     steps:
       - name: checkout repo
@@ -24,6 +23,10 @@ jobs:
         run: |
           choco install -y gradle openjdk
 
+      - name: update PATH for android tools
+        run: |
+          $env:PATH = "$env:ANDROID_HOME\cmdline-tools\latest\bin;$env:PATH"
+
       - name: cache gradle
         uses: actions/cache@v3
         with:
@@ -34,7 +37,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: cache android sdk
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}\android-sdk
+          key: ${{ runner.os }}-android-sdk
+          restore-keys: |
+            ${{ runner.os }}-android-sdk
+
       - name: install android sdk
+        shell: powershell
         run: |
           mkdir $env:ANDROID_HOME
           cd $env:ANDROID_HOME
@@ -42,13 +54,15 @@ jobs:
           Expand-Archive cmdline-tools.zip -DestinationPath .
           mkdir cmdline-tools\latest
           Move-Item cmdline-tools\* cmdline-tools\latest
-          yes | $env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat --licenses
-          $env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          yes | & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --licenses
+          & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: build debug apk
+        shell: powershell
         run: gradle assembleDebug
 
       - name: build release apk
+        shell: powershell
         run: gradle assembleRelease
 
       - name: upload debug apk
