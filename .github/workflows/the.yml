@@ -1,4 +1,4 @@
-name: Extract and Push Zip
+name: Extract and Push Zip to Root
 
 on:
   push:
@@ -13,20 +13,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      - name: find and extract zip
+      - name: find and extract zip to root
         run: |
           ZIP_FILE=$(ls *.zip)
           if [ $(echo "$ZIP_FILE" | wc -w) -ne 1 ]; then
             echo "expected exactly 1 zip, found: $ZIP_FILE"
             exit 1
           fi
-          echo "extracting $ZIP_FILE..."
-          unzip -q "$ZIP_FILE" -d extracted
+          echo "extracting $ZIP_FILE to root..."
+          unzip -o -q "$ZIP_FILE" -d .
 
-      - name: push extracted files
+      - name: commit & push changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add extracted
-          git commit -m "extract zip $ZIP_FILE"
+          git add .
+          git commit -m "extract $ZIP_FILE to root" || echo "nothing to commit"
           git push
