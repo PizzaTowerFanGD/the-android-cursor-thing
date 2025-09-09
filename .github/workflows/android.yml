@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:22.04  # full ubuntu with tar installed
+      image: ubuntu:22.04
       options: --user root
 
     env:
@@ -18,16 +18,15 @@ jobs:
       PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:$PATH
 
     steps:
+      - name: install core dependencies
+        run: |
+          apt-get update
+          apt-get install -y git wget unzip tar curl gradle openjdk-17-jdk
+
       - name: checkout repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          submodules: recursive
-
-      - name: install dependencies
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends wget unzip tar curl gradle openjdk-17-jdk
 
       - name: cache gradle
         uses: actions/cache@v3
