@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_HOME: /usr/local/android-sdk
+      ANDROID_HOME: ${{ github.workspace }}/android-sdk
+      PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:$PATH
 
     steps:
       - name: checkout repo
@@ -24,7 +25,9 @@ jobs:
           java-version: '17'
 
       - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget unzip gradle
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget unzip gradle
 
       - name: install android sdk
         run: |
