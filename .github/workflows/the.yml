@@ -26,7 +26,8 @@ jobs:
       - name: commit & push changes
         run: |
           git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          git config --global user.email "github-actions@github-actions.com"
           git add .
           git commit -m "extract $ZIP_FILE to root" || echo "nothing to commit"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push
