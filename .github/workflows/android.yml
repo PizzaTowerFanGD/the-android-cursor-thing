@@ -24,10 +24,28 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: cache gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: cache android sdk
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/android-sdk
+          key: ${{ runner.os }}-android-sdk
+          restore-keys: |
+            ${{ runner.os }}-android-sdk
+
       - name: install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget unzip gradle
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget unzip tar gradle
 
       - name: install android sdk
         run: |
