@@ -23,11 +23,12 @@ jobs:
           echo "extracting $ZIP_FILE to root..."
           unzip -o -q "$ZIP_FILE" -d .
 
-      - name: commit & push changes
+      - name: commit & push changes safely
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github-actions.com"
           git add .
           git commit -m "extract $ZIP_FILE to root" || echo "nothing to commit"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git pull --rebase origin main
           git push
