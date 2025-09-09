@@ -10,8 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:22.04
-      options: --user root
+      
+        image: ghcr.io/catthehacker/ubuntu:full-22.04
+        options: --user root
 
     env:
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
