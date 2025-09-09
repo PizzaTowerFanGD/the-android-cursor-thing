@@ -1,0 +1,27 @@
+name: Extract Single Zip
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: find and extract zip
+        run: |
+          ZIP_FILE=$(ls *.zip)
+          if [ $(echo "$ZIP_FILE" | wc -w) -ne 1 ]; then
+            echo "expected exactly 1 zip, found: $ZIP_FILE"
+            exit 1
+          fi
+          echo "extracting $ZIP_FILE..."
+          unzip -q "$ZIP_FILE" -d extracted
+          
+      - name: list extracted contents
+        run: ls -l extracted
