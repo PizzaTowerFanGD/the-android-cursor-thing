@@ -15,6 +15,11 @@ jobs:
       PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:$PATH
 
     steps:
+      - name: install tar early
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tar
+
       - name: checkout repo
         uses: actions/checkout@v3
 
@@ -23,6 +28,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: install other dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget unzip gradle
 
       - name: cache gradle
         uses: actions/cache@v3
@@ -41,11 +50,6 @@ jobs:
           key: ${{ runner.os }}-android-sdk
           restore-keys: |
             ${{ runner.os }}-android-sdk
-
-      - name: install dependencies
-        run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget unzip tar gradle
 
       - name: install android sdk
         run: |
