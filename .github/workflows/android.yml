@@ -1,4 +1,4 @@
-name: android-build
+name: android-build-windows
 
 on:
   push:
@@ -8,55 +8,42 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    container:
-      
-        image: ghcr.io/catthehacker/ubuntu:full-22.04
-        options: --user root
+    runs-on: windows-latest
 
     env:
-      ANDROID_HOME: ${{ github.workspace }}/android-sdk
-      PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:$PATH
+      ANDROID_HOME: ${{ github.workspace }}\android-sdk
+      PATH: ${{ github.workspace }}\android-sdk\cmdline-tools\latest\bin;${{ env.PATH }}
 
     steps:
-      - name: install core dependencies
-        run: |
-          apt-get update
-          apt-get install -y git wget unzip tar curl gradle openjdk-17-jdk
-
       - name: checkout repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - name: install dependencies
+        run: |
+          choco install -y gradle openjdk
+
       - name: cache gradle
         uses: actions/cache@v3
         with:
           path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper/
+            $env:USERPROFILE\.gradle\caches
+            $env:USERPROFILE\.gradle\wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: cache android sdk
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/android-sdk
-          key: ${{ runner.os }}-android-sdk
-          restore-keys: |
-            ${{ runner.os }}-android-sdk
-
       - name: install android sdk
         run: |
-          mkdir -p $ANDROID_HOME
-          cd $ANDROID_HOME
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip
-          mkdir -p cmdline-tools/latest
-          mv cmdline-tools/* cmdline-tools/latest/
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          mkdir $env:ANDROID_HOME
+          cd $env:ANDROID_HOME
+          Invoke-WebRequest https://dl.google.com/android/repository/commandlinetools-win-9477386_latest.zip -OutFile cmdline-tools.zip
+          Expand-Archive cmdline-tools.zip -DestinationPath .
+          mkdir cmdline-tools\latest
+          Move-Item cmdline-tools\* cmdline-tools\latest
+          yes | $env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat --licenses
+          $env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: build debug apk
         run: gradle assembleDebug
@@ -68,10 +55,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app\build\outputs\apk\debug\app-debug.apk
 
       - name: upload release apk
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app\build\outputs\apk\release\app-release.apk
