@@ -9,29 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04  # full ubuntu with tar installed
+      options: --user root
 
     env:
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
       PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:$PATH
 
     steps:
-      - name: install tar early
-        run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tar
-
       - name: checkout repo
         uses: actions/checkout@v3
-
-      - name: set up jdk
-        uses: actions/setup-java@v3
         with:
-          distribution: temurin
-          java-version: '17'
+          fetch-depth: 0
+          submodules: recursive
 
-      - name: install other dependencies
+      - name: install dependencies
         run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget unzip gradle
+          apt-get update
+          apt-get install -y --no-install-recommends wget unzip tar curl gradle openjdk-17-jdk
 
       - name: cache gradle
         uses: actions/cache@v3
